@@ -55,7 +55,7 @@ Dla endpointu GET /api/books spodziewamy się listy książek (tablica JSON).
 ```java
 
 @Test
-void shouldReturnJsonForAllBooks() {
+void shouldReturnAtLeastOneBook() {
     given()
             .baseUri("http://localhost:8080")
             .when()
@@ -79,12 +79,12 @@ Chcemy, przetestować pobranie konkretnej książki po id.
 ```java
 
 @Test
-void shouldReturnJsonForAllBooks() {
+void shouldGetBookById() {
     given()
             .baseUri("http://localhost:8080")
             .pathParam("id", 1L)
             .when()
-            .get("/api/books{id}")
+            .get("/api/books/{id}")
             .then()
             .statusCode(200)
             .body("id", equalTo(1))
@@ -126,16 +126,15 @@ Sprawdzamy filtrowanie po parametrze query author.
 
 @Test
 void shouldFilterBooksByAuthor() {
-    given()
-            .baseUri("http://localhost:8080")
-            .queryParam("author", "Robert C. Martin")
-            .when()
-            .get("/api/books")
-            .then()
-            .statusCode(404)
-            .body("status", equalTo(200))
-            .body("size()", greaterThan(200))
-            .body("author", everyItem(equalTo("Robert C. Martin")));
-}
+        given()
+                .baseUri("http://localhost:8080")
+                .queryParam("author", "Robert C. Martin")
+                .when()
+                .get("/api/books")
+                .then()
+                .statusCode(200)
+                .body("size()", greaterThanOrEqualTo(1))
+                .body("author", everyItem(equalTo("Robert C. Martin")));
+    }
 ```
 "author" w everyItem(...) – odnosi się do listy wartości pola author dla wszystkich elementów listy.

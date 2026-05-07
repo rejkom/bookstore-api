@@ -1,6 +1,6 @@
 # Book Store – REST API + RestAssured (Warsztaty QA)
 
-## Ćwiczenia – część 8 - Praca z JSON
+## Ćwiczenia – część 8 - Praca z jsonPath oraz biblioteką Jackson
 
 JSON (JavaScript Object Notation) to lekki tekstowy format wymiany danych – łatwy do czytania dla ludzi i maszyn.
 
@@ -47,7 +47,8 @@ void shouldReturnAtLeastOneBook() {
          .statusCode(200) 
          .extract() 
          .response(); 
-int size = response.jsonPath().getList("$").size(); assertThat(size).isGreaterThan(1); }
+int size = response.jsonPath().getList("$").size(); assertThat(size).isGreaterThan(1); 
+}
 ```
 
 ## Serializacja i deserializacja JSON do obiektów Java
@@ -59,17 +60,10 @@ Jackson to popularna biblioteka Javy do serializacji i deserializacji JSON:
 
 ### Mapowanie JSON na obiekt BookDto w teście
 ```java
-public class BookDto { 
-   private Long id; 
-   private String title; 
-   private String author; 
-   private BigDecimal price; 
-   private String isbn; 
-   private Instant createdAt; 
-   private Instant updatedAt; 
-
-// gettery/settery lub record (immutable data/DTO) 
+public record BookDto(Long id, String title, String author, BigDecimal price, String isbn, Instant createdAt,
+                      Instant updatedAt) {
 }
+
 @Test 
 void shouldMapSingleBookToBookDto() { 
    BookDto book = 
@@ -83,31 +77,28 @@ void shouldMapSingleBookToBookDto() {
          .extract() 
          .as(BookDto.class); 
 
-assertThat(book.getTitle()).isEqualTo("Clean Code"); 
-assertThat(book.getPrice()).isGreaterThan(BigDecimal.ZERO); 
-assertThat(book.getIsbn()).isEqualTo("978-0132350884"); 
-assertThat(book.getCreatedAt()).isNotNull(); 
-assertThat(book.getUpdatedAt()).isNotNull(); 
+assertThat(book.title()).isEqualTo("Clean Code"); 
+assertThat(book.price()).isGreaterThan(BigDecimal.ZERO); 
+assertThat(book.isbn()).isEqualTo("978-0132350884"); 
+assertThat(book.createdAt()).isNotNull(); 
+assertThat(book.updatedAt()).isNotNull(); 
 }
 ```
 
 ### Mapowanie BookDto na JSON
 ```java
-public class BookDto { 
-   private Long id; 
-   private String title; 
-   private String author; 
-   private BigDecimal price; 
-   private String isbn; 
-   private Instant createdAt; 
-   private Instant updatedAt; 
+public record BookDto(Long id, String title, String author, BigDecimal price, String isbn, Instant createdAt,
+                      Instant updatedAt) {
 
-// gettery/settery lub record (immutable data/DTO) 
+    public BookDto(String title, String author, BigDecimal price, String isbn) {
+        this(null, title, author, price, isbn, null, null);
+    }
 }
+
 @Test 
-void shouldCreateBookFromDto() { 
-   BookDto newBook = 
-      new BookDto("Clean Code", "Robert C. Martin", new BigDecimal("99.90")); 
+void shouldCreateBookFromDto() {
+    BookDto newBook =
+            new BookDto("Clean Code", "Robert C. Martin", new BigDecimal("99.90"), "978-0132350884");
 
    given()
       .contentType(ContentType.JSON) 

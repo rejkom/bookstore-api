@@ -7,20 +7,19 @@
 ```java
 //Przykład: wspólna specyfikacja w klasie bazowej
 public abstract class BaseApiTest {
-    protected static RequestSpecification requestSpec;
 
     @BeforeAll
     static void configureRestAssured() {
-        requestSpec = new RequestSpecBuilder()
+        RestAssured.requestSpecification = new RequestSpecBuilder()
                 .setBaseUri("http://localhost")
                 .setPort(8080)
                 .setBasePath("/api")
                 .addFilter(new RequestLoggingFilter(LogDetail.METHOD))
                 .addFilter(new RequestLoggingFilter(LogDetail.URI))
+                .addFilter(new RequestLoggingFilter(LogDetail.BODY))
                 .addFilter(new ResponseLoggingFilter(LogDetail.STATUS))
+                .addFilter(new ResponseLoggingFilter(LogDetail.BODY))
                 .build();
-
-        RestAssured.requestSpecification = requestSpec;
     }
 }
 ```
@@ -48,20 +47,20 @@ class BookCrudApiTest extends BaseApiTest {
 
 - requestSpec to baza (adres, logowanie, basePath).
 - adminSpec dodaje tylko to, czego potrzeba w tym teście (Basic Auth).
-- Wzorzec: wspólna specyfikacja + lokalne rozszerzenia zamiast kopiowania parametrów w kilkunastu miejscach.
+- Wzorzec: wspólna specyfikacja z rozszerzanej klasy + lokalne rozszerzenia zamiast kopiowania parametrów w kilkunastu
+  miejscach.
 
 ```java
 // rozszerzenie specyfikacji o auth
 @Test
 void shouldCreateBookAsAdmin() {
-    RequestSpecification adminSpec = requestSpec
-            .given()
-            .auth().basic("admin", "admin123");
+    RequestSpecification adminSpec =
+            given().auth().basic("admin", "admin123");
 
     given()
             .spec(adminSpec)
-            .body(newBookJson)
-            .contentType("application/json")
+            .body(newBook)
+            .contentType(ContentType.JSON)
             .when()
             .post("/books")
             .then()
@@ -70,6 +69,8 @@ void shouldCreateBookAsAdmin() {
 ```
 
 ---
+
+## Logowanie
 
 ### Logowanie w testach tylko w przypadku błędów-Rozwiązanie 1
 
@@ -115,14 +116,16 @@ import io.restassured.filter.log.ErrorLoggingFilter;
 import io.restassured.builder.RequestSpecBuilder;
 
 public class BaseApiTest {
-    protected static RequestSpecification requestSpec;
 
-@BeforeAll
-static void configureRestAssured() {
-    requestSpec = new RequestSpecBuilder().setBaseUri("http://localhost").setPort(8080).setBasePath("/api")
-            .addFilter(new ErrorLoggingFilter()) // loguj body tylko dla 4xx/5xx 
-            .build();
-}
+    @BeforeAll
+    static void configureRestAssured() {
+        RestAssured.requestSpecification = new RequestSpecBuilder()
+                .setBaseUri("http://localhost")
+                .setPort(8080)
+                .setBasePath("/api")
+                .addFilter(new ErrorLoggingFilter()) // loguj tylko dla błędów
+                .build();
+    }
 }
 
 ```

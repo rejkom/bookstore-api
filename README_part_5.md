@@ -44,15 +44,15 @@ public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exce
 ```java
 
 @Test
-void shouldCreateNewBook() {
+void shouldCreateNewBookForAuthenticatedUser() {
     given()
             .baseUri("http://localhost:8080")
             .contentType("application/json")
             .auth().basic("admin", "admin123")
             .contentType("application/json")
-            .body(newBookJson)
+            .body(newBook)
             .when()
-            .post("/books")
+            .post("/api/books")
             .then()
             .statusCode(201);
 }
@@ -66,11 +66,13 @@ void shouldCreateNewBook() {
 String token =
         given()
                 .baseUri("http://localhost:8080")
-                .contentType("application/json")
                 .contentType(ContentType.JSON)
-                .body(""" { "username": "student", "password": "student" } """)
+                .auth().basic("admin", "admin123")
+                .body(""" 
+                        { "username": "student", "password": "student" } 
+                        """)
                 .when()
-                .post("/auth/token")
+                .post("/api/auth/token")
                 .then()
                 .statusCode(200)
                 .extract()
@@ -84,14 +86,13 @@ String token =
  void secureBooksWithTokenShouldReturnBooks() {
     given()
             .baseUri("http://localhost:8080")
-            .contentType("application/json")
-            .accept(ContentType.JSON)
+            .contentType(ContentType.JSON)
             .header("Authorization", "Bearer " + token)
             .when()
-            .get("/secure/books")
+            .get("/api/secure/books")
             .then()
             .statusCode(200)
-            .body("$", not(empty()));
+            .body("$", not(empty())); //$ sprawdza cały root odpowiedzi
 }
 ```
 ### Ćwiczenie 3: Brak nagłówka Authorization
@@ -103,7 +104,7 @@ void secureBooksWithoutTokenShouldReturn401() {
             .contentType("application/json")
             .accept(ContentType.JSON)
             .when()
-            .get("/secure/books")
+            .get("/api/secure/books")
             .then()
             .statusCode(401);
 }
