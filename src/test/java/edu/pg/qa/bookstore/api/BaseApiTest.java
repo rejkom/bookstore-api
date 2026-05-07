@@ -10,9 +10,9 @@ public abstract class BaseApiTest {
 
     @BeforeAll
     static void configureRestAssured() {
-        RestAssured.baseURI = "http://localhost";
-        RestAssured.port = 8080;
-        RestAssured.basePath = "/api";
+//        RestAssured.baseURI = "http://localhost";
+//        RestAssured.port = 8080;
+//        RestAssured.basePath = "/api";
 
         // Włączamy logowanie requestów/response na czas warsztatów
         RestAssured.filters(
