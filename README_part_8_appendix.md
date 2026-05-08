@@ -13,8 +13,8 @@ Składa się z:
 - W nowoczesnych API JSON jest de facto standardem odpowiedzi HTTP (REST, mikroserwisy)
 
 ### Test dla /books (lista niepusta + wartości pól)
-- `"$"` – cała tablica książek (korzeń JSON).
-- `"[0].title" / "[0].price" / "[0].isbn"` – pola pierwszej książki.
+- `"$"` – oznacza cały JSON, czyli w tym przypadku całą tablicę książek.
+- `"[0].title", "[0].price", "[0].isbn"` – wskazują pola pierwszej książki w tablicy.
 - Jednym testem sprawdzamy: status, niepustą listę i sensowne wartości biznesowe (tytuł, cena, ISBN).
 
 ```java

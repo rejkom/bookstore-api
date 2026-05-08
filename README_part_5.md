@@ -88,6 +88,7 @@ String token =
             .baseUri("http://localhost:8080")
             .contentType(ContentType.JSON)
             .header("Authorization", "Bearer " + token)
+            //.auth().oauth2(token) - sprawdź czy zamiast header ta opcja również zadziała
             .when()
             .get("/api/secure/books")
             .then()
